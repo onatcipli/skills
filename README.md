@@ -21,11 +21,22 @@ npx skills add onatcipli/skills --skill <skill-name>
 npx skills add onatcipli/skills
 ```
 
-## Available Skills
+## ReviewCat
 
-| Skill | Description | Install |
-|-------|-------------|---------|
-| [review-cat](skills/review-cat/) | App Store review analysis, competitor intelligence, and automated reply generation | `npx skills add onatcipli/skills --skill review-cat` |
+App Store review analysis, competitor intelligence, and automated response generation for iOS/macOS apps.
+
+```bash
+npx skills add onatcipli/skills --skill review-cat
+```
+
+| Feature | Description |
+|---------|-------------|
+| Review Fetching | Fetch reviews via App Store Connect API (own apps) or public RSS feed (competitors) |
+| Sentiment Analysis | Classify reviews, extract themes, and score sentiment (-1.0 to +1.0) |
+| Reply Generation | Context-aware developer replies with templates by rating and issue type |
+| Competitor Analysis | Compare ratings, sentiment, and feature gaps across competing apps |
+| Trend Monitoring | Track rating changes over time, detect anomalies, correlate with releases |
+| Executive Reports | Generate stakeholder-ready summaries with actionable recommendations |
 
 ## Repository Structure
 
