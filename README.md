@@ -23,9 +23,9 @@ npx skills add onatcipli/skills
 
 ## Available Skills
 
-| Skill | Description |
-|-------|-------------|
-| [review-cat](skills/review-cat/) | App Store review analysis, competitor intelligence, and automated reply generation |
+| Skill | Description | Install |
+|-------|-------------|---------|
+| [review-cat](skills/review-cat/) | App Store review analysis, competitor intelligence, and automated reply generation | `npx skills add onatcipli/skills --skill review-cat` |
 
 ## Repository Structure
 
