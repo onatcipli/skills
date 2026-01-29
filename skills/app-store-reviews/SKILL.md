@@ -1,5 +1,5 @@
 ---
-name: review-cat
+name: app-store-reviews
 description: >
   App Store review analysis, competitor intelligence, and automated response
   generation for iOS/macOS apps. Use this skill when working with Apple App Store
@@ -16,7 +16,7 @@ description: >
   interview that auto-detects patterns from existing responses.
 ---
 
-# ReviewCat
+# App Store Reviews
 
 Analyze App Store reviews, generate intelligent replies, and extract competitive
 insights using Apple's public and private APIs.
