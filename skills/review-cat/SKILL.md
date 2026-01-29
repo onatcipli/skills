@@ -11,13 +11,77 @@ description: >
   (5) Comparing ratings, review sentiment, or feature gaps across competing apps,
   (6) Tracking rating trends and review volume over time,
   (7) Producing executive summaries or actionable insight reports from review data,
-  (8) Searching the App Store for apps by name or category.
+  (8) Searching the App Store for apps by name or category,
+  (9) Setting up app-specific reply configurations through an interactive onboarding
+  interview that auto-detects patterns from existing responses.
 ---
 
 # ReviewCat
 
 Analyze App Store reviews, generate intelligent replies, and extract competitive
 insights using Apple's public and private APIs.
+
+## Workflow 0 — App Setup & Onboarding
+
+Before generating replies, run the onboarding process to create an app-specific
+configuration file. This ensures replies match your brand voice consistently.
+
+### Quick Start
+
+1. Ask the user: "Would you like to set up reply preferences for your app?"
+2. If yes, proceed with onboarding
+3. If a config file already exists, ask if they want to update it
+
+### Onboarding Steps
+
+1. **Fetch existing responses** (if available):
+   ```
+   GET /v1/apps/{appId}/customerReviews?include=response&limit=100
+   ```
+
+2. **Auto-detect patterns** from existing replies:
+   - Greeting style ("Hi {name}," vs "Hello!")
+   - Sign-off ("— The Team" vs none)
+   - Tone (formal vs casual)
+   - Emoji usage
+   - Support email/URLs
+   - Common phrases
+
+3. **Present findings** to user:
+   ```
+   "I analyzed {n} existing replies and detected these patterns:
+    - Tone: {detected_tone}
+    - Sign-off: {detected_signoff}
+    - Emoji usage: {detected_emoji}
+    Would you like to use these as defaults?"
+   ```
+
+4. **Conduct interview** with smart defaults:
+   - App identity (name, description, support email)
+   - Brand voice (tone, emoji, sign-off)
+   - Reply policies (escalation, restricted topics)
+   - Language support
+
+   See [onboarding-interview.md](references/onboarding-interview.md) for full question list.
+
+5. **Generate config file**:
+   - Create `{app-name}-review-config.md`
+   - Save to user's preferred location
+   - Confirm file location
+
+### Output
+
+The onboarding process generates a markdown configuration file following the
+template in [app-config-template.md](references/app-config-template.md).
+
+### Re-running Setup
+
+Users can update their configuration at any time:
+- Update specific settings
+- Start fresh with new configuration
+- Keep existing and continue
+
+---
 
 ## API Access Tiers
 
@@ -63,6 +127,21 @@ Choose the tier based on the task:
 
 Generate context-aware, professional developer responses to customer reviews.
 
+### Pre-requisite: App Configuration
+
+Before generating replies, check if an app configuration file exists:
+
+1. **If config exists:** Load settings from `{app-name}-review-config.md`
+2. **If no config:** Prompt user to run [Workflow 0](#workflow-0--app-setup--onboarding) first,
+   or proceed with default settings
+
+When a config file is available, apply these settings:
+- **Brand voice:** Tone, emoji usage, sign-off style
+- **Preferred phrases:** Use configured phrases where appropriate
+- **Avoided phrases:** Never use words/phrases marked as restricted
+- **Policies:** Follow escalation rules and restricted topics
+- **Language:** Match supported language preferences
+
 ### Reply Strategy
 
 | Rating | Tone | Strategy |
@@ -73,11 +152,20 @@ Generate context-aware, professional developer responses to customer reviews.
 
 ### Instructions
 
-1. Read the review's rating, title, body, and territory
-2. Identify the core issue or sentiment
-3. Select reply strategy based on rating
-4. Draft response following patterns in [reply-templates.md](references/reply-templates.md)
-5. Post via `POST /v1/customerReviewResponses` (private API only)
+1. **Load app config** (if available) from `{app-name}-review-config.md`
+2. Read the review's rating, title, body, and territory
+3. Identify the core issue or sentiment
+4. Check if topic is restricted (redirect to support if so)
+5. Select reply strategy based on rating + config policies
+6. Draft response following:
+   - App config settings (tone, phrases, emoji, sign-off)
+   - Patterns in [reply-templates.md](references/reply-templates.md)
+7. Validate reply against config constraints:
+   - No restricted topics mentioned
+   - No avoided phrases used
+   - Correct sign-off applied
+   - Length within config preference
+8. Post via `POST /v1/customerReviewResponses` (private API only)
 
 ### Constraints
 
@@ -86,6 +174,7 @@ Generate context-aware, professional developer responses to customer reviews.
 - Always be professional — never argue or be defensive
 - Reference specific issues the user raised to show the reply is not generic
 - For non-English reviews, respond in the same language as the review
+- **Follow all policies defined in app config file**
 
 ## Workflow 4 — Competitor Comparison
 
@@ -240,3 +329,13 @@ for page in range(1, 11):
 | List versions | GET | `/v1/apps/{id}/appStoreVersions` | JWT |
 
 For full endpoint details, parameters, and authentication setup, see [apple-endpoints.md](references/apple-endpoints.md).
+
+## Reference Files
+
+| File | Purpose |
+|------|---------|
+| [apple-endpoints.md](references/apple-endpoints.md) | API endpoint details, authentication, parameters |
+| [analysis-prompts.md](references/analysis-prompts.md) | Prompt patterns for review analysis |
+| [reply-templates.md](references/reply-templates.md) | Reply templates by rating and issue type |
+| [onboarding-interview.md](references/onboarding-interview.md) | Interview questions and auto-detection logic |
+| [app-config-template.md](references/app-config-template.md) | Template for app-specific config files |
