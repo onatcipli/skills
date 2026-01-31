@@ -28,6 +28,7 @@ npx skills add onatcipli/skills
 | `app-store-reviews` | Review analysis, sentiment, intelligent replies | `npx skills add onatcipli/skills --skill app-store-reviews` |
 | `app-store-premium-index` | Price localization via purchasing power parity | `npx skills add onatcipli/skills --skill app-store-premium-index` |
 | `app-store-aso-localization` | ASO optimization and metadata localization | `npx skills add onatcipli/skills --skill app-store-aso-localization` |
+| `app-store-screenshots` | Screenshot research, competitor analysis, planning | `npx skills add onatcipli/skills --skill app-store-screenshots` |
 
 ---
 
@@ -85,6 +86,27 @@ npx skills add onatcipli/skills --skill app-store-aso-localization
 | Cross-Localization | Double keyword coverage using Apple's multi-locale indexing |
 | Bulk Updates | Programmatically update metadata via App Store Connect API |
 | Competitor ASO | Analyze competitor keywords and find gaps |
+
+---
+
+## App Store Screenshots
+
+Screenshot research, competitor analysis, and planning tool with local preview website.
+
+```bash
+npx skills add onatcipli/skills --skill app-store-screenshots
+```
+
+| Feature | Description |
+|---------|-------------|
+| Find Competitors | Discover competitors via iTunes Search and RSS feeds |
+| Download Screenshots | Download competitor screenshots locally for analysis |
+| Strategy Analysis | Analyze screenshot styles, captions, and patterns |
+| Plan Screenshots | Generate detailed screenshot plan based on research |
+| Preview Website | Lightweight local HTML tool to view and compare |
+| Export Guide | Checklist and specs for App Store Connect upload |
+
+---
 
 ## Repository Structure
 

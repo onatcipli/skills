@@ -1,0 +1,325 @@
+# iTunes API Reference
+
+Endpoints for fetching app data and screenshot URLs.
+
+---
+
+## iTunes Lookup API
+
+Get detailed app information including screenshot URLs.
+
+### Endpoint
+
+```
+GET https://itunes.apple.com/lookup?id={appId}&country={countryCode}
+```
+
+### Parameters
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `id` | Yes | iTunes App ID (numeric) |
+| `country` | No | Two-letter country code (default: us) |
+
+### Example Request
+
+```bash
+curl "https://itunes.apple.com/lookup?id=324684580&country=us"
+```
+
+### Example Response
+
+```json
+{
+  "resultCount": 1,
+  "results": [
+    {
+      "trackId": 324684580,
+      "trackName": "Spotify - Music and Podcasts",
+      "bundleId": "com.spotify.client",
+      "sellerName": "Spotify AB",
+      "primaryGenreName": "Music",
+      "primaryGenreId": 6011,
+      "averageUserRating": 4.8,
+      "userRatingCount": 24500000,
+      "price": 0,
+      "formattedPrice": "Free",
+      "currentVersionReleaseDate": "2024-01-15T08:00:00Z",
+      "version": "8.9.0",
+      "description": "With Spotify, you can listen to music...",
+
+      "artworkUrl60": "https://is1-ssl.mzstatic.com/.../60x60bb.jpg",
+      "artworkUrl100": "https://is1-ssl.mzstatic.com/.../100x100bb.jpg",
+      "artworkUrl512": "https://is1-ssl.mzstatic.com/.../512x512bb.jpg",
+
+      "screenshotUrls": [
+        "https://is1-ssl.mzstatic.com/.../1290x2796bb.png",
+        "https://is1-ssl.mzstatic.com/.../1290x2796bb.png",
+        "https://is1-ssl.mzstatic.com/.../1290x2796bb.png"
+      ],
+      "ipadScreenshotUrls": [
+        "https://is1-ssl.mzstatic.com/.../2048x2732bb.png",
+        "https://is1-ssl.mzstatic.com/.../2048x2732bb.png"
+      ],
+      "appletvScreenshotUrls": []
+    }
+  ]
+}
+```
+
+### Key Fields for Screenshots
+
+| Field | Description |
+|-------|-------------|
+| `screenshotUrls` | Array of iPhone screenshot URLs |
+| `ipadScreenshotUrls` | Array of iPad screenshot URLs |
+| `artworkUrl512` | App icon (512px) |
+| `artworkUrl100` | App icon (100px) |
+
+---
+
+## iTunes Search API
+
+Search for apps by keyword.
+
+### Endpoint
+
+```
+GET https://itunes.apple.com/search?term={query}&entity=software&country={cc}&limit={n}
+```
+
+### Parameters
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `term` | Yes | Search query (URL encoded) |
+| `entity` | Yes | Use `software` for apps |
+| `country` | No | Two-letter country code (default: us) |
+| `limit` | No | Results limit, 1-200 (default: 50) |
+| `attribute` | No | Filter: `softwareDeveloper` for dev search |
+
+### Example Requests
+
+```bash
+# Search for meditation apps
+curl "https://itunes.apple.com/search?term=meditation&entity=software&country=us&limit=25"
+
+# Search by developer
+curl "https://itunes.apple.com/search?term=Spotify&entity=software&attribute=softwareDeveloper"
+```
+
+---
+
+## Apple RSS Feeds (Top Charts)
+
+Get top apps by category and chart type.
+
+### Endpoint
+
+```
+GET https://rss.applemarketingtools.com/api/v2/{country}/apps/{chartType}/{limit}/apps.json
+```
+
+### Parameters
+
+| Parameter | Values |
+|-----------|--------|
+| `country` | `us`, `gb`, `de`, `jp`, etc. |
+| `chartType` | `top-free`, `top-paid`, `top-grossing` |
+| `limit` | 1-100 |
+
+### Filter by Category
+
+Add `?genre={genreId}` to filter by category.
+
+### Example Requests
+
+```bash
+# Top 50 free apps in US
+curl "https://rss.applemarketingtools.com/api/v2/us/apps/top-free/50/apps.json"
+
+# Top 25 paid games in US
+curl "https://rss.applemarketingtools.com/api/v2/us/apps/top-paid/25/apps.json?genre=6014"
+
+# Top grossing health apps
+curl "https://rss.applemarketingtools.com/api/v2/us/apps/top-grossing/50/apps.json?genre=6013"
+```
+
+### Example Response
+
+```json
+{
+  "feed": {
+    "title": "Top Free Apps",
+    "country": "us",
+    "updated": "2024-01-15T12:00:00.000Z",
+    "results": [
+      {
+        "artistName": "Spotify AB",
+        "id": "324684580",
+        "name": "Spotify - Music and Podcasts",
+        "releaseDate": "2011-07-14",
+        "kind": "apps",
+        "artworkUrl100": "https://...",
+        "genres": [
+          { "genreId": "6011", "name": "Music" }
+        ],
+        "url": "https://apps.apple.com/us/app/spotify/id324684580"
+      }
+    ]
+  }
+}
+```
+
+**Note:** RSS feeds don't include screenshot URLs. Use the `id` to lookup full details.
+
+---
+
+## Category (Genre) IDs
+
+| ID | Category |
+|----|----------|
+| 6000 | Business |
+| 6001 | Weather |
+| 6002 | Utilities |
+| 6003 | Travel |
+| 6004 | Sports |
+| 6005 | Social Networking |
+| 6006 | Reference |
+| 6007 | Productivity |
+| 6008 | Photo & Video |
+| 6009 | News |
+| 6010 | Navigation |
+| 6011 | Music |
+| 6012 | Lifestyle |
+| 6013 | Health & Fitness |
+| 6014 | Games |
+| 6015 | Finance |
+| 6016 | Entertainment |
+| 6017 | Education |
+| 6018 | Books |
+| 6020 | Medical |
+| 6021 | Magazines & Newspapers |
+| 6022 | Catalogs |
+| 6023 | Food & Drink |
+| 6024 | Shopping |
+| 6025 | Stickers |
+| 6026 | Developer Tools |
+| 6027 | Graphics & Design |
+
+---
+
+## Download Screenshots Script
+
+Python script to download competitor screenshots:
+
+```python
+import requests
+import os
+import json
+from pathlib import Path
+
+def download_screenshots(app_id: str, output_dir: str, country: str = "us"):
+    """
+    Download all screenshots for an app.
+
+    Args:
+        app_id: iTunes App ID
+        output_dir: Base output directory
+        country: Country code for lookup
+    """
+    # Fetch app data
+    url = f"https://itunes.apple.com/lookup?id={app_id}&country={country}"
+    response = requests.get(url)
+    data = response.json()
+
+    if data["resultCount"] == 0:
+        print(f"App {app_id} not found")
+        return None
+
+    app = data["results"][0]
+    app_name = app["trackName"].replace("/", "-").replace(":", "-")
+
+    # Create directories
+    base_path = Path(output_dir) / "competitors" / app_name
+    iphone_path = base_path / "iphone"
+    ipad_path = base_path / "ipad"
+
+    iphone_path.mkdir(parents=True, exist_ok=True)
+    ipad_path.mkdir(parents=True, exist_ok=True)
+
+    # Download iPhone screenshots
+    for i, url in enumerate(app.get("screenshotUrls", []), 1):
+        print(f"Downloading iPhone screenshot {i}...")
+        img_response = requests.get(url)
+        with open(iphone_path / f"{i:02d}.png", "wb") as f:
+            f.write(img_response.content)
+
+    # Download iPad screenshots
+    for i, url in enumerate(app.get("ipadScreenshotUrls", []), 1):
+        print(f"Downloading iPad screenshot {i}...")
+        img_response = requests.get(url)
+        with open(ipad_path / f"{i:02d}.png", "wb") as f:
+            f.write(img_response.content)
+
+    # Save metadata
+    with open(base_path / "metadata.json", "w") as f:
+        json.dump(app, f, indent=2)
+
+    print(f"Downloaded {len(app.get('screenshotUrls', []))} iPhone screenshots")
+    print(f"Downloaded {len(app.get('ipadScreenshotUrls', []))} iPad screenshots")
+    print(f"Saved to: {base_path}")
+
+    return app
+
+# Usage
+if __name__ == "__main__":
+    # Download Spotify screenshots
+    download_screenshots("324684580", "./my_app_screenshots")
+
+    # Download Calm screenshots
+    download_screenshots("571800810", "./my_app_screenshots")
+```
+
+---
+
+## Rate Limits
+
+| API | Limit | Recommendation |
+|-----|-------|----------------|
+| iTunes Search | ~20 req/min | Add 3s delay between calls |
+| iTunes Lookup | ~20 req/min | Add 3s delay between calls |
+| RSS Feeds | Undocumented | Add 5s delay between calls |
+
+---
+
+## Error Handling
+
+### Common Errors
+
+| Status | Meaning | Solution |
+|--------|---------|----------|
+| 200 with `resultCount: 0` | App not found | Check app ID, try different country |
+| 403 | Rate limited | Wait and retry with backoff |
+| 503 | Service unavailable | Retry after delay |
+
+### Retry Logic
+
+```python
+import time
+
+def fetch_with_retry(url, max_retries=3, delay=3):
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                return response.json()
+            elif response.status_code == 403:
+                print(f"Rate limited, waiting {delay * (attempt + 1)}s...")
+                time.sleep(delay * (attempt + 1))
+        except requests.RequestException as e:
+            print(f"Request failed: {e}")
+            time.sleep(delay)
+
+    return None
+```
