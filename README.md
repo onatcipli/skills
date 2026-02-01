@@ -26,7 +26,7 @@ npx skills add onatcipli/skills
 | Skill | Description | Install |
 |-------|-------------|---------|
 | `app-store-reviews` | Review analysis, sentiment, intelligent replies | `npx skills add onatcipli/skills --skill app-store-reviews` |
-| `app-store-premium-index` | Price localization via purchasing power parity | `npx skills add onatcipli/skills --skill app-store-premium-index` |
+| `app-store-price-index` | Price localization via purchasing power parity | `npx skills add onatcipli/skills --skill app-store-price-index` |
 | `app-store-aso-localization` | ASO optimization and metadata localization | `npx skills add onatcipli/skills --skill app-store-aso-localization` |
 | `app-store-screenshots` | Screenshot research, competitor analysis, planning | `npx skills add onatcipli/skills --skill app-store-screenshots` |
 
@@ -52,17 +52,17 @@ npx skills add onatcipli/skills --skill app-store-reviews
 
 ---
 
-## App Store Premium Index
+## App Store Price Index
 
 Price localization intelligence using purchasing power parity analysis — like the Big Mac Index for your iOS app pricing.
 
 ```bash
-npx skills add onatcipli/skills --skill app-store-premium-index
+npx skills add onatcipli/skills --skill app-store-price-index
 ```
 
 | Feature | Description |
 |---------|-------------|
-| Build Premium Index | Analyze reference app prices across 175 territories |
+| Build Price Index | Analyze reference app prices across 175 territories |
 | Pricing Analysis | Compare your prices against PPP-adjusted benchmarks |
 | Recommendations | Generate localized prices (conservative/balanced/aggressive) |
 | API Automation | Apply price updates via App Store Connect API |
