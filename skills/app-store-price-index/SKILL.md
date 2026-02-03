@@ -1,9 +1,9 @@
 ---
-name: app-store-premium-index
+name: app-store-price-index
 description: >
   Price localization intelligence for iOS/macOS apps using purchasing power parity
   analysis. Use this skill when working with App Store pricing for any of these tasks:
-  (1) Building a "Premium Index" by analyzing reference app prices across territories,
+  (1) Building a "Price Index" by analyzing reference app prices across territories,
   (2) Comparing your app's pricing against PPP-adjusted benchmarks,
   (3) Generating localized price recommendations based on economic data,
   (4) Automating price updates via App Store Connect API,
@@ -12,7 +12,7 @@ description: >
   (7) Creating pricing health reports with actionable recommendations.
 ---
 
-# App Store Premium Index
+# App Store Price Index
 
 Optimize your App Store pricing using purchasing power parity analysis—like the
 Big Mac Index or Spotify Premium Index, but for your iOS/macOS apps.
