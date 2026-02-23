@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screenshot Builder — {APP_NAME}</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* ==================== BASE ==================== */
+        :root {
+            --export-w: 1260;
+            --export-h: 2736;
+            --scale: 0.25;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: #0a0a0b;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        /* ==================== TOOLBAR ==================== */
+        .toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(20, 20, 22, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 12px 24px;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar h1 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-right: auto;
+        }
+
+        .toolbar button {
+            padding: 8px 16px;
+            border: 1px solid #3a3a3a;
+            background: #1a1a1c;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .toolbar button:hover { background: #2a2a2c; }
+        .toolbar button.primary {
+            background: #e94560;
+            border-color: #e94560;
+        }
+        .toolbar button.primary:hover { background: #d63851; }
+
+        .toolbar .locale-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .toolbar .locale-tab {
+            padding: 6px 12px;
+            border: 1px solid #3a3a3a;
+            background: transparent;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .toolbar .locale-tab.active {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+        }
+
+        /* ==================== SCREENSHOT GRID ==================== */
+        .screenshots-section {
+            padding: 24px;
+        }
+
+        .screenshots-section h2 {
+            font-size: 14px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .screenshots-grid {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+        }
+
+        /* ==================== SCREENSHOT CONTAINER ==================== */
+        .screenshot-wrapper {
+            flex: 0 0 auto;
+            text-align: center;
+        }
+
+        .screenshot-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .screenshot-container {
+            width: calc(1260px * var(--scale));
+            height: calc(2736px * var(--scale));
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        /* ==================== SCREENSHOT CANVAS ==================== */
+        .screenshot-canvas {
+            width: 1260px;
+            height: 2736px;
+            transform: scale(var(--scale));
+            transform-origin: top left;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        /* ==================== BACKGROUNDS ==================== */
+        /*
+         * Each screenshot uses a unique dark gradient.
+         * Pattern: dark accent → near-black
+         * Accent is subtle — text readability is paramount.
+         */
+        .ss1 { background: linear-gradient(165deg, #1a3a0a 0%, #0d1f05 30%, #0a0a0b 60%, #0a0a0b 100%); }
+        .ss2 { background: linear-gradient(165deg, #0a2a1a 0%, #051510 30%, #0a0a0b 60%, #0a0a0b 100%); }
+        .ss3 { background: linear-gradient(165deg, #1a2a05 0%, #0f1a03 30%, #0a0a0b 60%, #0a0a0b 100%); }
+        .ss4 { background: linear-gradient(165deg, #0a1a2a 0%, #050f1a 30%, #0a0a0b 60%, #0a0a0b 100%); }
+        .ss5 { background: linear-gradient(165deg, #2a1a05 0%, #1a0f03 30%, #0a0a0b 60%, #0a0a0b 100%); }
+        .ss6 { background: linear-gradient(165deg, #1a0a2a 0%, #0f051a 30%, #0a0a0b 60%, #0a0a0b 100%); }
+
+        /* ==================== CAPTION SYSTEM ==================== */
+        /*
+         * RULES:
+         * - ALL screenshots use identical caption positioning and sizing
+         * - Title: exactly 2 lines (use <br> to control line breaks)
+         * - Subtitle: exactly 1 line
+         * - Only text content changes between screenshots
+         *
+         * Canvas size: 1260 x 2736 (iPhone 6.9")
+         */
+        .caption {
+            position: absolute;
+            top: 120px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 0 60px;
+            z-index: 10;
+        }
+
+        .caption h2 {
+            font-size: 152px;
+            font-weight: 900;
+            line-height: 0.95;
+            letter-spacing: -5px;
+            color: #fff;
+            text-shadow: 0 4px 40px rgba(0,0,0,0.5);
+        }
+
+        .caption p {
+            font-size: 52px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.7);
+            letter-spacing: -1px;
+            margin-top: 28px;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+        }
+
+        /* ==================== PHONE FRAME ==================== */
+        /*
+         * Realistic iPhone 16 Pro Max frame
+         * Dynamic Island (not notch) — all modern iPhones use pill shape
+         * Titanium-colored border
+         * Side buttons via ::before and ::after
+         */
+        .phone-frame {
+            position: absolute;
+            width: 540px;
+            height: 1170px;
+            border-radius: 56px;
+            background: #000;
+            border: 5px solid #7a7a80;
+            box-shadow:
+                0 0 0 1px rgba(0,0,0,0.8),
+                inset 0 0 0 1px rgba(255,255,255,0.05),
+                0 40px 100px rgba(0,0,0,0.7),
+                0 80px 180px rgba(0,0,0,0.35);
+            overflow: visible;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -80px;
+        }
+
+        .phone-frame .dynamic-island {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 130px;
+            height: 38px;
+            background: #000;
+            border-radius: 20px;
+            z-index: 5;
+        }
+
+        .phone-frame .screen {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            right: 6px;
+            bottom: 6px;
+            border-radius: 50px;
+            overflow: hidden;
+        }
+
+        .phone-frame .screen img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top;
+        }
+
+        /* Volume buttons (left side) */
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            left: -9px;
+            top: 180px;
+            width: 4px;
+            height: 55px;
+            background: #7a7a80;
+            border-radius: 3px 0 0 3px;
+            box-shadow:
+                0 75px 0 #7a7a80,
+                0 -65px 0 #7a7a80;
+        }
+
+        /* Power button (right side) */
+        .phone-frame::after {
+            content: '';
+            position: absolute;
+            right: -9px;
+            top: 240px;
+            width: 4px;
+            height: 80px;
+            background: #7a7a80;
+            border-radius: 0 3px 3px 0;
+        }
+
+        /* ==================== MASCOT / ASSET ==================== */
+        .mascot {
+            position: absolute;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .mascot img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 16px 60px rgba(0,0,0,0.5));
+        }
+
+        /* Right-side mascot (screenshots 1, 3, 6) */
+        .ss1 .mascot, .ss3 .mascot, .ss6 .mascot {
+            width: 950px;
+            height: 950px;
+            bottom: -50px;
+            right: -220px;
+        }
+
+        /* Left-side mascot (screenshots 2, 5) */
+        .ss2 .mascot, .ss5 .mascot {
+            width: 900px;
+            height: 900px;
+            bottom: -20px;
+            left: -200px;
+        }
+
+        /* ==================== STATUS BAR ==================== */
+        .status {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(20, 20, 22, 0.95);
+            padding: 8px 24px;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #2a2a2a;
+            z-index: 1000;
+        }
+
+        .status .dims {
+            color: #4ade80;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <h1>{APP_NAME} — Screenshot Builder</h1>
+        <div class="locale-tabs">
+            <button class="locale-tab active" data-locale="en-US">EN</button>
+            <!-- Add more locale tabs as needed:
+            <button class="locale-tab" data-locale="tr">TR</button>
+            <button class="locale-tab" data-locale="de-DE">DE</button>
+            -->
+        </div>
+        <button onclick="exportOne('ss1', '01_hook')">Export #1</button>
+        <button onclick="exportOne('ss2', '02_feature1')">Export #2</button>
+        <button onclick="exportOne('ss3', '03_feature2')">Export #3</button>
+        <button onclick="exportOne('ss4', '04_feature3')">Export #4</button>
+        <button onclick="exportOne('ss5', '05_usecase')">Export #5</button>
+        <button onclick="exportOne('ss6', '06_trust')">Export #6</button>
+        <button class="primary" onclick="exportAll()">Export All</button>
+    </div>
+
+    <!-- EN-US Screenshots -->
+    <div class="screenshots-section" id="section-en-US">
+        <h2>English (en-US)</h2>
+        <div class="screenshots-grid">
+
+            <!-- Screenshot 1: Hook -->
+            <div class="screenshot-wrapper">
+                <div class="screenshot-label">#1 — Hook</div>
+                <div class="screenshot-container">
+                    <div class="screenshot-canvas ss1" id="ss1">
+                        <div class="caption">
+                            <h2>{Headline<br>Line Two}</h2>
+                            <p>{Subtitle goes here}</p>
+                        </div>
+                        <div class="phone-frame">
+                            <div class="dynamic-island"></div>
+                            <div class="screen">
+                                <!-- <img src="assets/screen_01.png" crossorigin="anonymous" alt="Screen"> -->
+                            </div>
+                        </div>
+                        <!-- <div class="mascot"><img src="assets/mascot.png" crossorigin="anonymous" alt="Mascot"></div> -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshot 2: Feature 1 -->
+            <div class="screenshot-wrapper">
+                <div class="screenshot-label">#2 — Feature 1</div>
+                <div class="screenshot-container">
+                    <div class="screenshot-canvas ss2" id="ss2">
+                        <div class="caption">
+                            <h2>{Feature<br>Headline}</h2>
+                            <p>{Feature description}</p>
+                        </div>
+                        <div class="phone-frame">
+                            <div class="dynamic-island"></div>
+                            <div class="screen">
+                                <!-- <img src="assets/screen_02.png" crossorigin="anonymous" alt="Screen"> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshot 3: Feature 2 -->
+            <div class="screenshot-wrapper">
+                <div class="screenshot-label">#3 — Feature 2</div>
+                <div class="screenshot-container">
+                    <div class="screenshot-canvas ss3" id="ss3">
+                        <div class="caption">
+                            <h2>{Feature<br>Headline}</h2>
+                            <p>{Feature description}</p>
+                        </div>
+                        <div class="phone-frame">
+                            <div class="dynamic-island"></div>
+                            <div class="screen">
+                                <!-- <img src="assets/screen_03.png" crossorigin="anonymous" alt="Screen"> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshot 4: Feature 3 -->
+            <div class="screenshot-wrapper">
+                <div class="screenshot-label">#4 — Feature 3</div>
+                <div class="screenshot-container">
+                    <div class="screenshot-canvas ss4" id="ss4">
+                        <div class="caption">
+                            <h2>{Feature<br>Headline}</h2>
+                            <p>{Feature description}</p>
+                        </div>
+                        <div class="phone-frame">
+                            <div class="dynamic-island"></div>
+                            <div class="screen">
+                                <!-- <img src="assets/screen_04.png" crossorigin="anonymous" alt="Screen"> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshot 5: Use Case -->
+            <div class="screenshot-wrapper">
+                <div class="screenshot-label">#5 — Use Case</div>
+                <div class="screenshot-container">
+                    <div class="screenshot-canvas ss5" id="ss5">
+                        <div class="caption">
+                            <h2>{Use Case<br>Headline}</h2>
+                            <p>{Use case description}</p>
+                        </div>
+                        <div class="phone-frame">
+                            <div class="dynamic-island"></div>
+                            <div class="screen">
+                                <!-- <img src="assets/screen_05.png" crossorigin="anonymous" alt="Screen"> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshot 6: Trust / Social Proof -->
+            <div class="screenshot-wrapper">
+                <div class="screenshot-label">#6 — Trust</div>
+                <div class="screenshot-container">
+                    <div class="screenshot-canvas ss6" id="ss6">
+                        <div class="caption">
+                            <h2>{Trust<br>Headline}</h2>
+                            <p>{Social proof text}</p>
+                        </div>
+                        <div class="phone-frame">
+                            <div class="dynamic-island"></div>
+                            <div class="screen">
+                                <!-- <img src="assets/screen_06.png" crossorigin="anonymous" alt="Screen"> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Add more locale sections by duplicating the above and changing IDs:
+    <div class="screenshots-section" id="section-tr" style="display: none;">
+        <h2>Turkish (tr)</h2>
+        <div class="screenshots-grid">
+            Use ss7-ss12 IDs, same CSS classes (ss1-ss6) for layout
+        </div>
+    </div>
+    -->
+
+    <!-- Status Bar -->
+    <div class="status">
+        Target: <span class="dims">1260 × 2736</span> (iPhone 6.9") |
+        Scale: <span class="dims">25%</span> |
+        Format: PNG, no transparency, sRGB |
+        <span id="export-status"></span>
+    </div>
+
+    <script>
+        // ==================== FILE:// PROTOCOL WARNING ====================
+        if (window.location.protocol === 'file:') {
+            document.body.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:center;height:100vh;
+                            flex-direction:column;gap:16px;padding:24px;text-align:center;">
+                    <h1 style="color:#e94560;">Cannot Export from file:// URL</h1>
+                    <p style="color:#888;max-width:500px;">
+                        Canvas export requires an HTTP server due to browser security restrictions.
+                        Images loaded via file:// are treated as cross-origin and will cause
+                        "Tainted canvases may not be exported" errors.
+                    </p>
+                    <code style="background:#1a1a1c;padding:12px 24px;border-radius:8px;color:#4ade80;">
+                        python3 -m http.server 8080
+                    </code>
+                    <p style="color:#888;">Then open: <a href="http://localhost:8080" style="color:#4ade80;">
+                        http://localhost:8080/export-tool.html</a></p>
+                </div>
+            `;
+        }
+
+        // ==================== LOCALE TABS ====================
+        document.querySelectorAll('.locale-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.locale-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const locale = tab.dataset.locale;
+                document.querySelectorAll('.screenshots-section').forEach(s => {
+                    s.style.display = s.id === `section-${locale}` ? 'block' : 'none';
+                });
+            });
+        });
+
+        // ==================== EXPORT FUNCTIONS ====================
+        const statusEl = document.getElementById('export-status');
+
+        async function exportOne(elementId, filename, format = 'png') {
+            statusEl.textContent = `Exporting ${filename}...`;
+            const el = document.getElementById(elementId);
+            if (!el) {
+                statusEl.textContent = `Error: element #${elementId} not found`;
+                return;
+            }
+
+            const origTransform = el.style.transform;
+            el.style.transform = 'none';
+
+            try {
+                const canvas = await html2canvas(el, {
+                    width: 1260,
+                    height: 2736,
+                    scale: 1,
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: null,
+                    logging: false,
+                });
+
+                el.style.transform = origTransform;
+
+                const link = document.createElement('a');
+                link.download = `${filename}.${format === 'png' ? 'png' : 'jpg'}`;
+                link.href = canvas.toDataURL(
+                    format === 'png' ? 'image/png' : 'image/jpeg',
+                    format === 'png' ? undefined : 0.95
+                );
+                link.click();
+                statusEl.textContent = `Exported: ${filename}.${format}`;
+            } catch (err) {
+                el.style.transform = origTransform;
+                statusEl.textContent = `Error: ${err.message}`;
+                console.error('Export failed:', err);
+            }
+        }
+
+        async function exportAll() {
+            const activeLocale = document.querySelector('.locale-tab.active')?.dataset.locale || 'en-US';
+            const section = document.getElementById(`section-${activeLocale}`);
+            if (!section) return;
+
+            const canvases = section.querySelectorAll('.screenshot-canvas');
+            statusEl.textContent = `Exporting ${canvases.length} screenshots...`;
+
+            for (let i = 0; i < canvases.length; i++) {
+                const canvas = canvases[i];
+                const num = String(i + 1).padStart(2, '0');
+                const name = `${num}_screenshot_${activeLocale}`;
+                await exportOne(canvas.id, name, 'png');
+                await new Promise(r => setTimeout(r, 500));
+            }
+
+            statusEl.textContent = `Done — exported ${canvases.length} screenshots for ${activeLocale}`;
+        }
+
+        console.log('Screenshot Builder loaded.');
+        console.log('Target dimensions: 1260 x 2736 (iPhone 6.9")');
+        console.log('Serve via HTTP for export to work.');
+    </script>
+</body>
+</html>
